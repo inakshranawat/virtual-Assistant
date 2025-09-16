@@ -8,21 +8,34 @@ import cookieParser from "cookie-parser"
 import userRouter from "./routes/user.routes.js"
 import geminiResponse from "./gemini.js"
 
+const app = express()
 
-const app=express()
+// ✅ Allowed origins (local + production)
+const allowedOrigins = [
+  "http://localhost:5173", 
+  "https://virtual-assistant-f9ua.onrender.com"
+]
+
 app.use(cors({
-    origin:"https://virtual-assistant-f9ua.onrender.com",
-    credentials:true
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps or curl)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true)
+    } else {
+      callback(new Error("Not allowed by CORS"))
+    }
+  },
+  credentials: true
 }))
-const port=process.env.PORT || 5000
+
+const port = process.env.PORT || 5000
 app.use(express.json())
 app.use(cookieParser())
-app.use("/api/auth",authRouter)
-app.use("/api/user",userRouter)
 
+app.use("/api/auth", authRouter)
+app.use("/api/user", userRouter)
 
-app.listen(port,()=>{
-    connectDb()
-    console.log("server started")
+app.listen(port, () => {
+  connectDb()
+  console.log(`🚀 Server started on port ${port}`)
 })
-
